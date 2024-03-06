@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
-@Controller()
+@Controller('user') // don't forget to remove
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
