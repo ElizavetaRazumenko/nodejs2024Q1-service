@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -11,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
+import { User, UserResponse } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -18,30 +21,34 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll() {
-    console.log('here');
+  @Header('Content-Type', 'application/json')
+  findAll(): UserResponse[] {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Header('Content-Type', 'application/json')
+  findOne(@Param('id') id: string): UserResponse {
     return this.userService.findOne(id);
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
-  create(@Body() dto: CreateDto) {
+  @Header('Content-Type', 'application/json')
+  create(@Body() dto: CreateDto): UserResponse {
     return this.userService.create(dto);
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateDto) {
+  @Header('Content-Type', 'application/json')
+  update(@Param('id') id: string, @Body() dto: UpdateDto): UserResponse {
     return this.userService.update(id, dto);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.userService.delete(id);
+  @HttpCode(204)
+  delete(@Param('id') id: string): void {
+    this.userService.delete(id);
   }
 }
