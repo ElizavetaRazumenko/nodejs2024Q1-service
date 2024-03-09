@@ -19,13 +19,11 @@ export class FavsController {
   constructor(private readonly favsService: FavsService) {}
 
   @Get()
-  @Header('Content-Type', 'application/json')
   findAll(): Favs {
     return this.favsService.findAll();
   }
 
   @Post(':entity/:id')
-  @Header('Content-Type', 'application/json')
   add(
     @Param('entity') entity: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -42,6 +40,7 @@ export class FavsController {
 
   @Delete(':entity/:id')
   @HttpCode(204)
+  
   delete(
     @Param('entity') entity: string,
     @Param('id', ParseUUIDPipe) id: string,
