@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Album } from './entities/album.entity';
 import { Artist } from './entities/artist.entity';
 import { Track } from './entities/track.entity';
 import { User } from './entities/user.entity';
@@ -10,4 +11,6 @@ export class DatabaseService {
   public tracks: Track[] = [];
 
   public artists: Artist[] = [];
+
+  public albums: Album[] = [];
 }
