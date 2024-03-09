@@ -1,29 +1,27 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { isUUID } from 'class-validator';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { User, UserResponse } from './entities/user.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   private users: User[] = [];
 
-  public findAll(): UserResponse[] {
-    return this.users.map((user) => this.convertUser(user));
+  public findAll(): User[] {
+    return this.users;
   }
 
-  public findOne(id: string): UserResponse {
+  public findOne(id: string): User {
     const user = this.findUser(id);
-    return this.convertUser(user);
+    return user;
   }
 
-  public create(dto: CreateDto): UserResponse {
+  public create(dto: CreateDto): User {
     const { login, password } = dto;
 
     const user: User = {
@@ -37,10 +35,10 @@ export class UserService {
 
     this.users.push(user);
 
-    return this.convertUser(user);
+    return user;
   }
 
-  public update(id: string, dto: UpdateDto): UserResponse {
+  public update(id: string, dto: UpdateDto): User {
     const { oldPassword, newPassword } = dto;
     const user = this.findUser(id);
     const { password } = user;
@@ -53,7 +51,7 @@ export class UserService {
     user.version += 1;
     user.updatedAt = Date.now();
 
-    return this.convertUser(user);
+    return user;
   }
 
   public delete(id: string): void {
@@ -63,17 +61,7 @@ export class UserService {
     this.users.splice(userIndex, 1);
   }
 
-  private convertUser(user: User): UserResponse {
-    const { password, ...rest } = user;
-
-    return rest;
-  }
-
   private findUser(id: string): User {
-    if (!id || !isUUID(id)) {
-      throw new BadRequestException('ID is not an UUID type');
-    }
-
     const user = this.users.find((user) => user.id === id);
 
     if (!user) {
