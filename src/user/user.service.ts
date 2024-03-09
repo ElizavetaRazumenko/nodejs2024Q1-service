@@ -17,20 +17,16 @@ export class UserService {
   }
 
   public findOne(id: string): User {
-    const user = this.findUser(id);
-    return user;
+    return this.findUser(id);
   }
 
   public create(dto: CreateDto): User {
-    const { login, password } = dto;
-
     const user: User = {
       id: uuidv4(),
-      login: login,
-      password: password,
       version: 1,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      ...dto,
     };
 
     this.users.push(user);
@@ -65,7 +61,7 @@ export class UserService {
     const user = this.users.find((user) => user.id === id);
 
     if (!user) {
-      throw new NotFoundException(`User with ID=${id} not found`);
+      throw new NotFoundException('User with this ID not found');
     }
 
     return user;
