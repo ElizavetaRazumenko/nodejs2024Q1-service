@@ -3,17 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
+import { User } from 'src/database/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { User } from './entities/user.entity';
+
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
+  constructor(private dbService: DatabaseService) {}
 
   public findAll(): User[] {
-    return this.users;
+    return this.dbService.users;
   }
 
   public findOne(id: string): User {
@@ -29,7 +31,7 @@ export class UserService {
       ...dto,
     };
 
-    this.users.push(user);
+    this.dbService.users.push(user);
 
     return user;
   }
@@ -52,13 +54,13 @@ export class UserService {
 
   public delete(id: string): void {
     const user = this.findUser(id);
-    const userIndex = this.users.indexOf(user);
+    const userIndex = this.dbService.users.indexOf(user);
 
-    this.users.splice(userIndex, 1);
+    this.dbService.users.splice(userIndex, 1);
   }
 
   private findUser(id: string): User {
-    const user = this.users.find((user) => user.id === id);
+    const user = this.dbService.users.find((user) => user.id === id);
 
     if (!user) {
       throw new NotFoundException('User with this ID not found');

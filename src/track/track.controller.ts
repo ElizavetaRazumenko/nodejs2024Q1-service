@@ -12,9 +12,9 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Track } from 'src/database/entities/track.entity';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { Track } from './entities/track.entity';
 import { TrackService } from './track.service';
 
 @Controller('track')

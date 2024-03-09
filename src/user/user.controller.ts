@@ -13,9 +13,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { User } from 'src/database/entities/user.entity';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')

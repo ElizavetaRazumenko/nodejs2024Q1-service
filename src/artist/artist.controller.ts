@@ -1,8 +1,22 @@
-import { Body, Controller, Get, Header, Param, ParseUUIDPipe, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { Artist } from 'src/database/entities/artist.entity';
 import { ArtistService } from './artist.service';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { Artist } from './entities/artist.entity';
+
 
 @Controller('artist')
 export class ArtistController {
@@ -35,5 +49,11 @@ export class ArtistController {
     @Body() dto: UpdateDto,
   ): Artist {
     return this.artistService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  delete(@Param('id', ParseUUIDPipe) id: string): void {
+    this.artistService.delete(id);
   }
 }

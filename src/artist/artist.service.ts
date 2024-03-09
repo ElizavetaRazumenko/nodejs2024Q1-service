@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
+import { Artist } from 'src/database/entities/artist.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
-import { Artist } from './entities/artist.entity';
+
 
 @Injectable()
 export class ArtistService {
-  private artists: Artist[] = [];
+  constructor(private dbService: DatabaseService) {}
 
   public findAll(): Artist[] {
-    return this.artists;
+    return this.dbService.artists;
   }
 
   public findOne(id: string): Artist {
@@ -22,7 +24,7 @@ export class ArtistService {
       ...dto,
     };
 
-    this.artists.push(artist);
+    this.dbService.artists.push(artist);
 
     return artist;
   }
@@ -35,13 +37,13 @@ export class ArtistService {
 
   public delete(id: string): void {
     const artist = this.findArtist(id);
-    const artistIndex = this.artists.indexOf(artist);
+    const artistIndex = this.dbService.artists.indexOf(artist);
 
-    this.artists.splice(artistIndex, 1);
+    this.dbService.artists.splice(artistIndex, 1);
   }
 
   private findArtist(id: string): Artist {
-    const artist = this.artists.find((artist) => artist.id === id);
+    const artist = this.dbService.artists.find((artist) => artist.id === id);
 
     if (!artist) {
       throw new NotFoundException('Artist with this ID not found');
