@@ -39,6 +39,9 @@ export class AlbumService {
     const albumIndex = this.dbService.albums.indexOf(album);
 
     this.dbService.albums.splice(albumIndex, 1);
+    this.dbService.tracks
+      .filter((track) => track.albumId === album.id)
+      .forEach((track) => (track.albumId = null));
   }
 
   private findAlbum(id: string): Album {

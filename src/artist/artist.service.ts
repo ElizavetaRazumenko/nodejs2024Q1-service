@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 
-
 @Injectable()
 export class ArtistService {
   constructor(private dbService: DatabaseService) {}
@@ -40,6 +39,12 @@ export class ArtistService {
     const artistIndex = this.dbService.artists.indexOf(artist);
 
     this.dbService.artists.splice(artistIndex, 1);
+    this.dbService.tracks
+      .filter((track) => track.artistId === artist.id)
+      .forEach((track) => (track.artistId = null));
+    this.dbService.albums
+      .filter((album) => album.artistId === artist.id)
+      .forEach((album) => (album.artistId = null));
   }
 
   private findArtist(id: string): Artist {
