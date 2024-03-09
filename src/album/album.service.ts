@@ -42,6 +42,15 @@ export class AlbumService {
     this.dbService.tracks
       .filter((track) => track.albumId === album.id)
       .forEach((track) => (track.albumId = null));
+
+    const albumInFavs = this.dbService.favs.albums.find(
+      (album) => album.id === id,
+    );
+
+    if (albumInFavs) {
+      const albumIndex = this.dbService.favs.albums.indexOf(albumInFavs);
+      this.dbService.favs.albums.splice(albumIndex, 1);
+    }
   }
 
   private findAlbum(id: string): Album {

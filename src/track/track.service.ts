@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 
-
 @Injectable()
 export class TrackService {
   constructor(private dbService: DatabaseService) {}
@@ -40,6 +39,14 @@ export class TrackService {
     const trackIndex = this.dbService.tracks.indexOf(track);
 
     this.dbService.tracks.splice(trackIndex, 1);
+    const trackInFavs = this.dbService.favs.tracks.find(
+      (track) => track.id === id,
+    );
+
+    if (trackInFavs) {
+      const trackIndex = this.dbService.favs.tracks.indexOf(trackInFavs);
+      this.dbService.favs.tracks.splice(trackIndex, 1);
+    }
   }
 
   private findTrack(id: string): Track {

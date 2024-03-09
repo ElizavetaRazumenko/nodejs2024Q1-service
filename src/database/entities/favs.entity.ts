@@ -7,3 +7,5 @@ export type Favs = {
   albums: Album[];
   tracks: Track[];
 };
+
+export type Entity = 'track' | 'album' | 'artist';
