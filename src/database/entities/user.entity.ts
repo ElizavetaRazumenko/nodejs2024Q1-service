@@ -1,4 +1,4 @@
-import { Exclude } from "class-transformer";
+import { Exclude } from 'class-transformer';
 
 export class User {
   id: string;
@@ -9,4 +9,4 @@ export class User {
   version: number;
   createdAt: number;
   updatedAt: number;
-};
+}

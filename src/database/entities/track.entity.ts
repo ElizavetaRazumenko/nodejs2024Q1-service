@@ -4,4 +4,4 @@ export type Track = {
   artistId: string | null;
   albumId: string | null;
   duration: number;
-}
+};

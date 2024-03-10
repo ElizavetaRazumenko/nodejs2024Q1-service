@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateDto {
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateDto {
   @IsOptional()
   @IsString()
   albumId: string | null;
-  
+
   @IsNotEmpty()
   @IsNumber()
   duration: number;

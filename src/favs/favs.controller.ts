@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   HttpCode,
   Param,
   ParseUUIDPipe,
@@ -40,7 +39,6 @@ export class FavsController {
 
   @Delete(':entity/:id')
   @HttpCode(204)
-  
   delete(
     @Param('entity') entity: string,
     @Param('id', ParseUUIDPipe) id: string,

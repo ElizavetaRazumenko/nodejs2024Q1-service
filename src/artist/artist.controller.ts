@@ -17,7 +17,6 @@ import { ArtistService } from './artist.service';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 
-
 @Controller('artist')
 export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}

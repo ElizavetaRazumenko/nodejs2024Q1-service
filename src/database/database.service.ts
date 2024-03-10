@@ -18,7 +18,6 @@ export class DatabaseService {
   public favs: Favs = {
     artists: [],
     albums: [],
-    tracks: []
+    tracks: [],
   };
-
 }

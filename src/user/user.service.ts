@@ -9,7 +9,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 
-
 @Injectable()
 export class UserService {
   constructor(private dbService: DatabaseService) {}
