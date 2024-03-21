@@ -23,15 +23,12 @@ export class FavsController {
   }
 
   @Post(':entity/:id')
-  add(
+  async add(
     @Param('entity') entity: string,
     @Param('id', ParseUUIDPipe) id: string,
-  ): string {
+  ) {
     if (this.entities.includes(entity)) {
-      this.favsService.add(entity as Entity, id);
-      return `${
-        entity[0].toUpperCase + entity.slice(1)
-      } successfully added to favorites`;
+      return this.favsService.add(entity as Entity, id);
     } else {
       throw new BadRequestException('Invalid entity');
     }
@@ -39,15 +36,12 @@ export class FavsController {
 
   @Delete(':entity/:id')
   @HttpCode(204)
-  delete(
+  async delete(
     @Param('entity') entity: string,
     @Param('id', ParseUUIDPipe) id: string,
-  ): string {
+  ) {
     if (this.entities.includes(entity)) {
-      this.favsService.delete(entity as Entity, id);
-      return `${
-        entity[0].toUpperCase + entity.slice(1)
-      } successfully deleted from favorites`;
+      return await this.favsService.delete(entity as Entity, id);
     } else {
       throw new BadRequestException('Invalid entity');
     }

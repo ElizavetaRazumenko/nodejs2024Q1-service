@@ -32,15 +32,17 @@ export class ArtistService {
 
   public async delete(id: string) {
     await this.findArtist(id);
+
     await this.prisma.artist.delete({
       where: { id },
     });
   }
 
   private async findArtist(id: string) {
-    const artist = this.prisma.artist.findUnique({
+    const artist = await this.prisma.artist.findUnique({
       where: { id },
     });
+
     if (!artist) {
       throw new NotFoundException('Artist with this ID not found');
     }

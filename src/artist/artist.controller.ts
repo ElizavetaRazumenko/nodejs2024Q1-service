@@ -49,6 +49,6 @@ export class ArtistController {
   @Delete(':id')
   @HttpCode(204)
   delete(@Param('id', ParseUUIDPipe) id: string) {
-    this.artistService.delete(id);
+    return this.artistService.delete(id);
   }
 }

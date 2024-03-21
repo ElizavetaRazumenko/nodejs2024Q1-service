@@ -49,6 +49,6 @@ export class AlbumController {
   @Delete(':id')
   @HttpCode(204)
   delete(@Param('id', ParseUUIDPipe) id: string) {
-    this.albumService.delete(id);
+    return this.albumService.delete(id);
   }
 }

@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
@@ -58,7 +57,23 @@ export class UserService {
 
   public async update(id: string, dto: UpdateDto) {
     const { oldPassword, newPassword } = dto;
-    const user = (await this.findUser(id)) as unknown as User;
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        login: true,
+        password: true,
+        version: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User with this ID not found');
+    }
     const { password } = user;
 
     if (oldPassword !== password) {
