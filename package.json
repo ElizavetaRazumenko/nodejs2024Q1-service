@@ -8,6 +8,8 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "docker-audit:api": "docker scout cves --details local://nodejs2024q1-service-api:latest",
+    "docker-audit:db": "docker scout cves --details local://postgres:13.5",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
