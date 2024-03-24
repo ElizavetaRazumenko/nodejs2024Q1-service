@@ -12,7 +12,6 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Album } from 'src/database/entities/album.entity';
 import { AlbumService } from './album.service';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
@@ -23,36 +22,33 @@ export class AlbumController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  findAll(): Album[] {
+  findAll() {
     return this.albumService.findAll();
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Album {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.albumService.findOne(id);
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
   @Header('Content-Type', 'application/json')
-  create(@Body() dto: CreateDto): Album {
+  create(@Body() dto: CreateDto) {
     return this.albumService.create(dto);
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
   @Header('Content-Type', 'application/json')
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateDto,
-  ): Album {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto) {
     return this.albumService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUIDPipe) id: string): void {
-    this.albumService.delete(id);
+  delete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.albumService.delete(id);
   }
 }
