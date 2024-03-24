@@ -1,2 +1,2 @@
-FROM postgres:13.6-alpine
-EXPOSE 5432
+FROM postgres:13.5-alpine
+CMD ["postgres"]

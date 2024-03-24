@@ -6,8 +6,6 @@ COPY . .
 
 COPY package*.json .
 
-EXPOSE 4000
+RUN npm install
 
-RUN npm ci
-
-CMD npx prisma migrate dev && npm run start:dev
+CMD npx prisma generate && npx prisma migrate deploy && npm run start:dev
