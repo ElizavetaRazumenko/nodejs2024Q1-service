@@ -12,8 +12,6 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { User } from 'src/database/entities/user.entity';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 import { UserService } from './user.service';
@@ -24,37 +22,33 @@ export class UserController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  findAll(): User[] {
-    const users = this.userService.findAll();
-    return users.map((user) => plainToClass(User, user));
+  async findAll() {
+    return await this.userService.findAll();
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  findOne(@Param('id', ParseUUIDPipe) id: string): User {
-    const user = this.userService.findOne(id);
-    return plainToClass(User, user);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.userService.findOne(id);
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
   @Header('Content-Type', 'application/json')
-  create(@Body() dto: CreateDto): User {
-    const user = this.userService.create(dto);
-    return plainToClass(User, user);
+  async create(@Body() dto: CreateDto) {
+    return await this.userService.create(dto);
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
   @Header('Content-Type', 'application/json')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto): User {
-    const user = this.userService.update(id, dto);
-    return plainToClass(User, user);
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto) {
+    return await this.userService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUIDPipe) id: string): void {
-    this.userService.delete(id);
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    await this.userService.delete(id);
   }
 }
