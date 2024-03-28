@@ -31,6 +31,26 @@ export class UserService {
     return this.convertUser(user);
   }
 
+  public async findOneByLogin(login: string) {
+    const user = await this.prisma.user.findFirst({
+      // It might be worth cleaning it up later.
+      where: { login },
+      select: {
+        id: true,
+        login: true,
+        version: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.convertUser(user);
+  }
+
   public async create(dto: CreateDto) {
     const user = await this.prisma.user.create({
       data: {
@@ -48,11 +68,7 @@ export class UserService {
       },
     });
 
-    return {
-      ...user,
-      createdAt: user.createdAt.getTime(),
-      updatedAt: user.updatedAt.getTime(),
-    };
+    return this.convertUser(user);
   }
 
   public async update(id: string, dto: UpdateDto) {
