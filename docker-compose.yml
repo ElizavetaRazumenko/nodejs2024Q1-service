@@ -16,8 +16,6 @@ services:
     environment:
       - PORT=${PORT}
       - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - TOKEN_EXPIRE_TIME=${TOKEN_EXPIRE_TIME}
     ports:
       - ${PORT}:${PORT}
     volumes:
@@ -37,8 +35,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - TOKEN_EXPIRE_TIME=${TOKEN_EXPIRE_TIME}
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 10s

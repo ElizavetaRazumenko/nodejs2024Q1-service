@@ -6,6 +6,7 @@ import { AlbumModule } from './album/album.module';
 import { FavsModule } from './favs/favs.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { LoggerService } from './logger/logger.service';
 
 @Module({
   imports: [
@@ -17,5 +18,6 @@ import { AuthModule } from './auth/auth.module';
     PrismaModule,
     AuthModule,
   ],
+  providers: [LoggerService],
 })
 export class AppModule {}

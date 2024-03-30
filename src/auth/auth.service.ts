@@ -18,15 +18,7 @@ export class AuthService {
   ) {}
 
   public async signUp(dto: SignUpDto) {
-    const { login, password } = dto;
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = await this.userService.create({
-      login,
-      password: hash,
-    });
-
-    return user;
+    return await this.userService.create(dto);
   }
 
   public async login(dto: LoginDto) {
@@ -79,11 +71,11 @@ export class AuthService {
         expiresIn: process.env.TOKEN_EXPIRE_TIME,
       });
 
-      const newRefreshToken = this.jwtService.sign(payload, {
+      const refreshToken = this.jwtService.sign(payload, {
         expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME,
       });
 
-      return { accessToken, refreshToken: newRefreshToken };
+      return { accessToken, refreshToken };
     } catch {
       throw new ForbiddenException('Refresh token is invalid or expired');
     }
