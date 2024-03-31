@@ -5,7 +5,7 @@ import { LoggerError } from './types';
 
 @Injectable()
 export class CustomLoggerService implements LoggerService {
-  private logLevel = process.env.LOG_LEVEL as LogLevel;
+  private logLevel = process.env.LOG_LEVEL || 'verbose';
   private logLevelValues = {
     log: 0,
     error: 1,

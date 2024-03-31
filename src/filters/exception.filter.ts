@@ -19,31 +19,31 @@ export class ExceptionsFilter implements ExceptionFilter {
     const { url, method, headers, query, body } =
       argumentHost.getRequest<Request>();
 
-    const status =
+    const trace = exception instanceof Error ? exception.stack : undefined;
+    const statusCode =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.customLoggerService.error({
-        message: 'Internal server error',
-        trace: (exception as Error).stack,
-        statusCode: status,
-        url,
-        query,
-        method,
-        headers,
-        body,
-      });
-    }
+    const errorResponse =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : { statusCode, message: 'Internal server error' };
 
-    const errorResponse = {
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: url,
-      message: exception.message || 'Internal server error',
-    };
+    this.customLoggerService.error({
+      url,
+      query,
+      method,
+      statusCode,
+      headers,
+      body,
+      trace,
+      errorResponse,
+      message: 'Internal server error',
+    });
 
-    res.status(status).json(errorResponse);
+    res.status(statusCode).json({
+      errorResponse,
+    });
   }
 }

@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from 'src/user/user.module';
 import { AuthGuard } from './auth.guard';
+import { CustomLoggerService } from 'src/logger/logger.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthGuard } from './auth.guard';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    CustomLoggerService,
   ],
 })
 export class AuthModule {}
