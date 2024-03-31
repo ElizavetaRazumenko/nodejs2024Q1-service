@@ -13,10 +13,10 @@ const PORT = process.env.PORT || 4000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe());
-
   const customLoggerService = app.get(CustomLoggerService);
   const exceptionsFilter = new ExceptionsFilter(customLoggerService);
+
+  app.useGlobalPipes(new ValidationPipe());
 
   app.useGlobalFilters(exceptionsFilter);
 

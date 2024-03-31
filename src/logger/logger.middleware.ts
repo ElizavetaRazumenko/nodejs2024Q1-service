@@ -7,15 +7,14 @@ export class LoggerMiddleware implements NestMiddleware {
   constructor(private readonly customLoggerService: CustomLoggerService) {}
 
   use(req: Request, res: Response, next: () => void) {
-    const { query, method, body, originalUrl } = req;
-
     res.on('finish', () => {
       this.customLoggerService.log(
-        `${method} ${originalUrl}: Query params: ${JSON.stringify(
-          query,
-        )}, Body: ${JSON.stringify(body)}, ${res.statusCode}.)}`,
+        `${req.method} ${req.originalUrl}: Query params: ${JSON.stringify(
+          req.query,
+        )}, Body: ${JSON.stringify(req.body)}, ${res.statusCode}.)}`,
       );
     });
+
     next();
   }
 }

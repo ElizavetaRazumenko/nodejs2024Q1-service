@@ -14,8 +14,7 @@ export class CustomLoggerService implements LoggerService {
     verbose: 4,
   };
 
-  private maxSizeKb: number =
-    parseInt(process.env.MAX_LOG_FILE_SIZE_KB, 10) || 1024;
+  private maxSizeKb = parseInt(process.env.MAX_LOG_FILE_SIZE_KB, 10) || 1024;
 
   private pathToLogFile = path.resolve(__dirname, '../../logs/application.log');
   private pathToErrorFile = path.resolve(__dirname, '../../logs/error.log');
@@ -23,7 +22,7 @@ export class CustomLoggerService implements LoggerService {
   private logger = new Logger();
 
   public log(message: string) {
-    this.writeLog(this.pathToLogFile, 'log', message);
+    this.writeLog('log', message);
   }
 
   public error({
@@ -37,59 +36,64 @@ export class CustomLoggerService implements LoggerService {
     trace,
     errorResponse,
   }: LoggerError) {
-    let log = `${new Date().toISOString()} [error] - ${message}${
-      trace ? '\nTrace: ' + trace : ''
-    }\n`;
+    let log = `${new Date().toISOString()} [error] - ${message}`;
+
+    if (trace) {
+      log += `\nTrace: ${trace}`;
+    }
 
     if (statusCode) {
-      log += `Status Code: ${statusCode}\n`;
+      log += `\nStatus Code: ${statusCode}`;
     }
 
     if (url) {
-      log += `URL: ${url}\n`;
+      log += `\nURL: ${url}`;
     }
 
     if (method) {
-      log += `Method: ${method}\n`;
+      log += `\nMethod: ${method}`;
     }
 
     if (headers) {
-      log += `Headers: ${JSON.stringify(headers)}\n`;
+      log += `\nHeaders: ${JSON.stringify(headers)}`;
     }
 
     if (query) {
-      log += `Query: ${JSON.stringify(query)}\n`;
+      log += `\nQuery: ${JSON.stringify(query)}`;
     }
 
     if (body) {
-      log += `Body: ${JSON.stringify(body)}\n`;
+      log += `\nBody: ${JSON.stringify(body)}`;
     }
 
     if (errorResponse) {
-      log += `Error Response: ${JSON.stringify(errorResponse)}\n`;
+      log += `\nError Response: ${JSON.stringify(errorResponse)}`;
     }
 
-    this.writeLog(this.pathToErrorFile, 'error', log);
+    this.writeLog('error', log, true);
   }
 
   public warn(message: string) {
-    this.writeLog(this.pathToLogFile, 'warn', message);
-  }
-
-  public debug(message: string) {
-    if (this.isShouldBeLog('debug')) {
-      this.writeLog(this.pathToLogFile, 'debug', message);
-    }
+    this.writeLog('warn', message);
   }
 
   public verbose(message: string) {
-    if (this.isShouldBeLog('verbose')) {
-      this.writeLog(this.pathToLogFile, 'verbose', message);
+    this.writeLog('verbose', message);
+  }
+
+  public debug(message: string) {
+    this.writeLog('debug', message);
+  }
+
+  private writeLog(level: LogLevel, message: string, isError = false) {
+    if (this.isShouldBeLog(level)) {
+      const filePath = isError ? this.pathToErrorFile : this.pathToLogFile;
+      this.writeLogToFile(filePath, level, message);
     }
   }
 
-  private writeLog(
-    filePath: string,
+  private writeLogToFile(
+    path: string,
     level: LogLevel,
     message: string,
     trace?: string,
@@ -98,13 +102,10 @@ export class CustomLoggerService implements LoggerService {
       trace ? '\nTrace: ' + trace : ''
     }\n`;
 
-    fs.stat(filePath, (err, stats) => {
-      if (!err && stats.size > this.maxSizeKb * 1024) {
-        const backupPath = filePath.replace(
-          '.log',
-          `_backup_${Date.now()}.log`,
-        );
-        fs.rename(filePath, backupPath, (renameErr) => {
+    fs.stat(path, (error, status) => {
+      if (!error && status.size > this.maxSizeKb * 1024) {
+        const backupPath = path.replace('.log', `_backup_${Date.now()}.log`);
+        fs.rename(path, backupPath, (renameErr) => {
           if (renameErr) {
             this.logger.error(`Error renaming log file: ${renameErr}`);
           }
@@ -112,9 +113,9 @@ export class CustomLoggerService implements LoggerService {
       }
     });
 
-    fs.appendFile(filePath, log, (err) => {
-      if (err) {
-        this.logger.error(`Error writing log to ${filePath}: ${err}`);
+    fs.appendFile(path, log, (error) => {
+      if (error) {
+        this.logger.error(`Error writing log to ${path}: ${error}`);
       }
     });
   }

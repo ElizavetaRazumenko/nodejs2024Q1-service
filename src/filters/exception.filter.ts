@@ -4,6 +4,9 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CustomLoggerService } from 'src/logger/logger.service';
@@ -20,15 +23,50 @@ export class ExceptionsFilter implements ExceptionFilter {
       argumentHost.getRequest<Request>();
 
     const trace = exception instanceof Error ? exception.stack : undefined;
-    const statusCode =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const errorResponse =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : { statusCode, message: 'Internal server error' };
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    let errorResponse: any;
+
+    switch (true) {
+      case exception instanceof HttpException:
+        statusCode = exception.getStatus();
+        errorResponse = exception.getResponse();
+
+        break;
+
+      case exception instanceof ForbiddenException:
+        statusCode = HttpStatus.FORBIDDEN;
+        errorResponse = {
+          statusCode,
+          message: 'Access forbidden.',
+        };
+
+        break;
+
+      case exception instanceof UnauthorizedException:
+        statusCode = HttpStatus.FORBIDDEN;
+        errorResponse = {
+          statusCode,
+          message: 'Authentication failed.',
+        };
+
+        break;
+
+      case exception instanceof BadRequestException:
+        statusCode = HttpStatus.BAD_REQUEST;
+        errorResponse = {
+          statusCode,
+          message: exception.getResponse(),
+        };
+
+        break;
+
+      default:
+        errorResponse = {
+          statusCode,
+          message: 'Internal server error.',
+        };
+    }
 
     this.customLoggerService.error({
       url,
@@ -39,7 +77,7 @@ export class ExceptionsFilter implements ExceptionFilter {
       body,
       trace,
       errorResponse,
-      message: 'Internal server error',
+      message: errorResponse.message || 'Internal server error',
     });
 
     res.status(statusCode).json({
