@@ -7,9 +7,9 @@ import { AlbumModule } from './album/album.module';
 import { FavsModule } from './favs/favs.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
-import { CustomLoggerService } from './logger/logger.service';
-import { ExceptionsFilter } from './filters/exception.filter';
 import { LoggerMiddleware } from './logger/logger.middleware';
+import { LoggerModule } from './logger/logger.module';
+import { HttpExceptionFilter } from './filters/exception.filter';
 
 @Module({
   imports: [
@@ -20,13 +20,12 @@ import { LoggerMiddleware } from './logger/logger.middleware';
     FavsModule,
     PrismaModule,
     AuthModule,
+    LoggerModule,
   ],
   providers: [
-    ExceptionsFilter,
-    CustomLoggerService,
     {
       provide: APP_FILTER,
-      useValue: new ExceptionsFilter(new CustomLoggerService()),
+      useClass: HttpExceptionFilter,
     },
   ],
 })

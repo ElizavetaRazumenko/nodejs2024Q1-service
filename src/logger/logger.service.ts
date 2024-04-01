@@ -1,126 +1,97 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { Injectable, Logger, LogLevel, LoggerService } from '@nestjs/common';
-import { LoggerError } from './types';
+import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { join, resolve } from 'path';
+import { existsSync } from 'fs';
+import * as fsPromises from 'node:fs/promises';
+import { LOGS } from './types';
 
 @Injectable()
-export class CustomLoggerService implements LoggerService {
-  private logLevel = process.env.LOG_LEVEL || 'verbose';
-  private logLevelValues = {
-    log: 0,
-    error: 1,
-    warn: 2,
-    debug: 3,
-    verbose: 4,
-  };
+export class LoggerService extends ConsoleLogger {
+  private logCount: number;
+  private errorCount: number;
+  private level: number;
+  private maxLogFileSize: number;
 
-  private maxSizeKb = parseInt(process.env.MAX_LOG_FILE_SIZE_KB, 10) || 1024;
-
-  private pathToLogFile = path.resolve(__dirname, '../../logs/application.log');
-  private pathToErrorFile = path.resolve(__dirname, '../../logs/error.log');
-
-  private logger = new Logger();
-
-  public log(message: string) {
-    this.writeLog('log', message);
+  constructor() {
+    super();
+    this.logCount = 1;
+    this.errorCount = 1;
+    this.level = +process.env.LOG_LEVEL || 2;
+    this.maxLogFileSize = +process.env.MAX_LOG_FILE_SIZE_KB || 5000;
   }
 
-  public error({
-    url,
-    query,
-    method,
-    statusCode,
-    headers,
-    body,
-    message,
-    trace,
-    errorResponse,
-  }: LoggerError) {
-    let log = `${new Date().toISOString()} [error] - ${message}`;
-
-    if (trace) {
-      log += `\nTrace: ${trace}`;
-    }
-
-    if (statusCode) {
-      log += `\nStatus Code: ${statusCode}`;
-    }
-
-    if (url) {
-      log += `\nURL: ${url}`;
-    }
-
-    if (method) {
-      log += `\nMethod: ${method}`;
-    }
-
-    if (headers) {
-      log += `\nHeaders: ${JSON.stringify(headers)}`;
-    }
-
-    if (query) {
-      log += `\nQuery: ${JSON.stringify(query)}`;
-    }
-
-    if (body) {
-      log += `\nBody: ${JSON.stringify(body)}`;
-    }
-
-    if (errorResponse) {
-      log += `\nError Response: ${JSON.stringify(errorResponse)}`;
-    }
-
-    this.writeLog('error', log, true);
+  log(msg: string, context: string) {
+    if (this.level >= 2)
+      this.logging(LOGS.log, `${msg}`, context || this.context);
   }
 
-  public warn(message: string) {
-    this.writeLog('warn', message);
+  warn(msg: string, context: string) {
+    if (this.level >= 1)
+      this.logging(LOGS.warn, `${msg}`, context || this.context);
   }
 
-  public verbose(message: string) {
-    this.writeLog('verbose', message);
+  error(msg: string, trace: string, context?: string) {
+    if (this.level >= 0)
+      this.logging(LOGS.error, `${msg}\n${trace}`, context || this.context);
   }
 
-  public debug(message: string) {
-    this.writeLog('debug', message);
+  debug(msg: string, context: string) {
+    if (this.level >= 4)
+      this.logging(LOGS.debug, `${msg}`, context || this.context);
   }
 
-  private writeLog(level: LogLevel, message: string, isError = false) {
-    if (this.isShouldBeLog(level)) {
-      const filePath = isError ? this.pathToErrorFile : this.pathToLogFile;
-      this.writeLogToFile(filePath, level, message);
+  verbose(msg: string, context: string) {
+    if (this.level >= 3)
+      this.logging(LOGS.verbose, `${msg}`, context || this.context);
+  }
+
+  private async writeLogging(count: number, message: string, file: string) {
+    const logDir = join(process.cwd(), 'logs');
+
+    if (!existsSync(logDir)) {
+      await fsPromises.mkdir(logDir, { recursive: true });
     }
+
+    let filePath = resolve(logDir, `${file}_${count}.log`);
+
+    if (!existsSync(filePath)) {
+      await fsPromises.writeFile(filePath, '');
+    }
+
+    const { size } = await fsPromises.stat(filePath);
+
+    if (size >= this.maxLogFileSize) {
+      count++;
+    }
+
+    filePath = resolve(logDir, `${file}_${count}.log`);
+
+    await fsPromises.writeFile(filePath, message, { flag: 'a' });
+
+    return count;
   }
 
-  private writeLogToFile(
-    path: string,
-    level: LogLevel,
-    message: string,
-    trace?: string,
-  ) {
-    const log = `${new Date().toISOString()} [${level}] - ${message}${
-      trace ? '\nTrace: ' + trace : ''
-    }\n`;
+  private async logging(level: string, message: string, context: string) {
+    const logMessage = `[${this.getTimestamp()}] [${level.toUpperCase()}] [${
+      context || ''
+    }] - [${message}]\n`;
 
-    fs.stat(path, (error, status) => {
-      if (!error && status.size > this.maxSizeKb * 1024) {
-        const backupPath = path.replace('.log', `_backup_${Date.now()}.log`);
-        fs.rename(path, backupPath, (renameErr) => {
-          if (renameErr) {
-            this.logger.error(`Error renaming log file: ${renameErr}`);
-          }
-        });
-      }
-    });
+    super[level](logMessage);
 
-    fs.appendFile(path, log, (error) => {
-      if (error) {
-        this.logger.error(`Error writing log to ${path}: ${error}`);
-      }
-    });
-  }
-
-  private isShouldBeLog(level: LogLevel): boolean {
-    return this.logLevelValues[level] >= this.logLevelValues[this.logLevel];
+    switch (level) {
+      case LOGS.error:
+        this.errorCount = await this.writeLogging(
+          this.errorCount,
+          logMessage,
+          'errors',
+        );
+        break;
+      default:
+        this.logCount = await this.writeLogging(
+          this.logCount,
+          logMessage,
+          'logs',
+        );
+        break;
+    }
   }
 }

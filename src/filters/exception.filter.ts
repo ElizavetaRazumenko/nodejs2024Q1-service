@@ -1,87 +1,51 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
-  UnauthorizedException,
-  ForbiddenException,
-  BadRequestException,
+  Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { CustomLoggerService } from 'src/logger/logger.service';
+import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
-export class ExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly customLoggerService: CustomLoggerService) {}
+export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: any, host: ArgumentsHost) {
-    const argumentHost = host.switchToHttp();
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
-    const res = argumentHost.getResponse<Response>();
-    const { url, method, headers, query, body } =
-      argumentHost.getRequest<Request>();
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const ctx = host.switchToHttp();
 
-    const trace = exception instanceof Error ? exception.stack : undefined;
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
-    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-    let errorResponse: any;
+    const { httpAdapter } = this.httpAdapterHost;
 
-    switch (true) {
-      case exception instanceof HttpException:
-        statusCode = exception.getStatus();
-        errorResponse = exception.getResponse();
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        break;
+    const message =
+      exception instanceof HttpException
+        ? exception.message
+        : 'Internal server error';
 
-      case exception instanceof ForbiddenException:
-        statusCode = HttpStatus.FORBIDDEN;
-        errorResponse = {
-          statusCode,
-          message: 'Access forbidden.',
-        };
+    const path = httpAdapter.getRequestUrl(request);
 
-        break;
+    this.logger.error(
+      `${request.method} - StatusCode: ${status} - Message: ${message}`,
+      (exception as HttpException).stack,
+    );
 
-      case exception instanceof UnauthorizedException:
-        statusCode = HttpStatus.FORBIDDEN;
-        errorResponse = {
-          statusCode,
-          message: 'Authentication failed.',
-        };
+    const responseBody = {
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path,
+      message,
+    };
 
-        break;
-
-      case exception instanceof BadRequestException:
-        statusCode = HttpStatus.BAD_REQUEST;
-        errorResponse = {
-          statusCode,
-          message: exception.getResponse(),
-        };
-
-        break;
-
-      default:
-        errorResponse = {
-          statusCode,
-          message: 'Internal server error.',
-        };
-    }
-
-    this.customLoggerService.error({
-      url,
-      query,
-      method,
-      statusCode,
-      headers,
-      body,
-      trace,
-      errorResponse,
-      message: errorResponse.message || 'Internal server error',
-    });
-
-    res.status(statusCode).json({
-      errorResponse,
-    });
+    httpAdapter.reply(response, responseBody, status);
   }
 }

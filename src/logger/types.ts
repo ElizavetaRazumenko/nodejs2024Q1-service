@@ -9,3 +9,11 @@ export type LoggerError = {
   trace?: string;
   errorResponse?: any;
 };
+
+export enum LOGS {
+  log = 'log',
+  error = 'error',
+  warn = 'warn',
+  debug = 'debug',
+  verbose = 'verbose',
+}

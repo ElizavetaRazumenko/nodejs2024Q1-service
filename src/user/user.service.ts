@@ -34,11 +34,11 @@ export class UserService {
 
   public async findOneByLogin(login: string) {
     const user = await this.prisma.user.findFirst({
-      // It might be worth cleaning it up later.
       where: { login },
       select: {
         id: true,
         login: true,
+        password: true,
         version: true,
         createdAt: true,
         updatedAt: true,
@@ -66,6 +66,7 @@ export class UserService {
       select: {
         id: true,
         login: true,
+        password: true,
         version: true,
         createdAt: true,
         updatedAt: true,
@@ -77,6 +78,7 @@ export class UserService {
 
   public async update(id: string, dto: UpdateDto) {
     const { oldPassword, newPassword } = dto;
+
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -96,9 +98,9 @@ export class UserService {
     }
     const { password } = user;
 
-    const cryptoPassword = bcrypt.compare(oldPassword, password);
+    const isPasswordsMatch = await bcrypt.compare(oldPassword, password);
 
-    if (!cryptoPassword) {
+    if (!isPasswordsMatch) {
       throw new ForbiddenException('Old password is incorrect');
     }
 
@@ -138,6 +140,7 @@ export class UserService {
       select: {
         id: true,
         login: true,
+        password: true,
         version: true,
         createdAt: true,
         updatedAt: true,

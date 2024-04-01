@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -23,27 +24,31 @@ export class UserController {
   @Get()
   @Header('Content-Type', 'application/json')
   async findAll() {
-    return await this.userService.findAll();
+    const users = await this.userService.findAll();
+    return users.map(({ password, ...rest }) => rest);
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return await this.userService.findOne(id);
+    const { password, ...rest } = await this.userService.findOne(id);
+    return rest;
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
   @Header('Content-Type', 'application/json')
   async create(@Body() dto: CreateDto) {
-    return await this.userService.create(dto);
+    const { password, ...rest } = await this.userService.create(dto);
+    return rest;
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
   @Header('Content-Type', 'application/json')
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto) {
-    return await this.userService.update(id, dto);
+    const { password, ...rest } = await this.userService.update(id, dto);
+    return rest;
   }
 
   @Delete(':id')

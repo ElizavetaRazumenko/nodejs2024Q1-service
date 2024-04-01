@@ -1,8 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
-  HttpStatus,
   Post,
   UsePipes,
   ValidationPipe,
@@ -21,25 +19,14 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   @Post('signup')
   async signup(@Body() dto: SignUpDto) {
-    return (
-      (await this.authService.signUp(dto)) && {
-        message: 'User created successfully',
-      }
-    );
+    return await this.authService.signUp(dto);
   }
 
   @Public()
   @UsePipes(new ValidationPipe())
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    try {
-      return this.authService.login(dto);
-    } catch (e) {
-      if (e.status === HttpStatus.FORBIDDEN) {
-        throw new ForbiddenException('Authentication failed');
-      }
-      throw e;
-    }
+    return this.authService.login(dto);
   }
 
   @UsePipes(new ValidationPipe())

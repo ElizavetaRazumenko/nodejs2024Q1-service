@@ -1,7 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +9,7 @@ import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './types';
+import { decode } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -28,41 +29,38 @@ export class AuthService {
       const isCorrectPassword = bcrypt.compare(password, user.password);
 
       if (!isCorrectPassword) {
-        throw new ForbiddenException('Invalid credentials');
+        throw new NotFoundException('Invalid credentials');
       }
 
       const { id, login } = user;
 
-      return this.getTokens(id, login);
+      const payload: JwtPayload = { userId: id, login };
+
+      const tokens = this.getTokens(payload);
+
+      return { ...payload, ...tokens };
     }
 
-    throw new ForbiddenException('User not found');
+    throw new NotFoundException('User not found');
   }
 
   public async refreshToken(token: string) {
-    if (token) {
-      try {
-        const { userId } = this.jwtService.verify(token);
-        const user = await this.userService.findOne(userId);
-
-        if (!user) {
-          throw new UnauthorizedException('User not found');
-        }
-
-        const { id, login } = user;
-
-        return this.getTokens(id, login);
-      } catch (error) {
-        throw new ForbiddenException('Invalid refresh token');
-      }
+    try {
+      await this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET_REFRESH_KEY,
+      });
+    } catch {
+      throw new ForbiddenException('Refresh token is not valid');
     }
 
-    throw new UnauthorizedException('Request body should be with refreshToken');
+    const payload = decode(token) as JwtPayload;
+
+    const tokens = this.getTokens(payload);
+
+    return { ...payload, ...tokens };
   }
 
-  private getTokens(id: string, login: string) {
-    const payload: JwtPayload = { userId: id, login };
-
+  private getTokens(payload: JwtPayload) {
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: process.env.TOKEN_EXPIRE_TIME,
       secret: process.env.JWT_SECRET_KEY,

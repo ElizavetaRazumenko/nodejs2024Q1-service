@@ -1,18 +1,25 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { CustomLoggerService } from './logger.service';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  constructor(private readonly customLoggerService: CustomLoggerService) {}
+  private logger = new Logger(LoggerMiddleware.name);
 
-  use(req: Request, res: Response, next: () => void) {
-    res.on('finish', () => {
-      this.customLoggerService.log(
-        `${req.method} ${req.originalUrl}: Query params: ${JSON.stringify(
-          req.query,
-        )}, Body: ${JSON.stringify(req.body)}, ${res.statusCode}.)}`,
-      );
+  use(request: Request, response: Response, next: NextFunction) {
+    const { query, method, body, originalUrl } = request;
+
+    response.on('finish', () => {
+      const message = `${method} ROUTE:${originalUrl} - Status Code:${
+        response.statusCode
+      } - Query:${JSON.stringify(query)} - Body:${JSON.stringify(body)}}`;
+
+      if (response.statusCode < 500 && response.statusCode > 399) {
+        this.logger.warn(message);
+      } else if (response.statusCode > 499) {
+        this.logger.error(message);
+      } else {
+        this.logger.log(message);
+      }
     });
 
     next();
