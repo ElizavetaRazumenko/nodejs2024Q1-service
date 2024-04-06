@@ -14,7 +14,7 @@ git clone {repository URL}
 ## Switch branch
 
 ```
-git checkout db
+git checkout dev-3
 ```
 
 ## Create .env file by using .env.example
