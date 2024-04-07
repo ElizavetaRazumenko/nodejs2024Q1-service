@@ -11,6 +11,28 @@
 git clone {repository URL}
 ```
 
+## Switch branch
+
+```
+git checkout dev-3
+```
+
+## Create .env file by using .env.example
+
+## Docker-compose
+
+```
+docker compose up --build
+```
+
+## Docker check for vulnerabilities
+
+```
+npm run docker-audit:api
+npm run docker-audit:db
+```
+
+
 ## Installing NPM modules
 
 ```

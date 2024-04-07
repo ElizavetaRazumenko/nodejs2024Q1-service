@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -12,8 +13,6 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { User } from 'src/database/entities/user.entity';
 import { CreateDto } from './dto/create.dto';
 import { UpdateDto } from './dto/update.dto';
 import { UserService } from './user.service';
@@ -24,37 +23,37 @@ export class UserController {
 
   @Get()
   @Header('Content-Type', 'application/json')
-  findAll(): User[] {
-    const users = this.userService.findAll();
-    return users.map((user) => plainToClass(User, user));
+  async findAll() {
+    const users = await this.userService.findAll();
+    return users.map(({ password, ...rest }) => rest);
   }
 
   @Get(':id')
   @Header('Content-Type', 'application/json')
-  findOne(@Param('id', ParseUUIDPipe) id: string): User {
-    const user = this.userService.findOne(id);
-    return plainToClass(User, user);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const { password, ...rest } = await this.userService.findOne(id);
+    return rest;
   }
 
   @UsePipes(new ValidationPipe())
   @Post()
   @Header('Content-Type', 'application/json')
-  create(@Body() dto: CreateDto): User {
-    const user = this.userService.create(dto);
-    return plainToClass(User, user);
+  async create(@Body() dto: CreateDto) {
+    const { password, ...rest } = await this.userService.create(dto);
+    return rest;
   }
 
   @UsePipes(new ValidationPipe())
   @Put(':id')
   @Header('Content-Type', 'application/json')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto): User {
-    const user = this.userService.update(id, dto);
-    return plainToClass(User, user);
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDto) {
+    const { password, ...rest } = await this.userService.update(id, dto);
+    return rest;
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUIDPipe) id: string): void {
-    this.userService.delete(id);
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    await this.userService.delete(id);
   }
 }

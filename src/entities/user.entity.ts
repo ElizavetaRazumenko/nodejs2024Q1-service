@@ -6,6 +6,7 @@ export class User {
 
   @Exclude()
   password: string;
+  token: string;
   version: number;
   createdAt: number;
   updatedAt: number;
